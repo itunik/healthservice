@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace BasicHealthService.Controllers
@@ -8,16 +9,21 @@ namespace BasicHealthService.Controllers
     public class ServerAliveController : ControllerBase
     {
         private readonly ILogger _logger;
+        private readonly IConfiguration _configuration;
 
-        public ServerAliveController(ILogger logger)
+        public ServerAliveController(ILogger logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         [HttpGet]
         public ActionResult Get()
         {
-            return new OkResult();
+            _logger.Information("Triggered GET method");
+            var elasticUri = _configuration["ElasticConfiguration:URI"];
+            
+            return new OkObjectResult($"I'm alive. Elastic URI: {elasticUri}");
         }
     }
 }

@@ -11,6 +11,14 @@ resources:
 pool:
   vmImage: ubuntu-latest
 steps:
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $path = "./appsettings.json"
+      $content = Get-Content -Path $path | ConvertFrom-Json
+      $content.ElasticConfiguration.URI = $(ElasticUri)
+      $content | ConvertTo-Json -Depth 5 | Set-Content -path $path
 - task: Docker@2
   inputs:
     containerRegistry: 'DockerHub'
@@ -18,5 +26,5 @@ steps:
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
     tags: | 
-      '$(Build.BuildNumber)'
+      $(Build.BuildNumber)
       latest

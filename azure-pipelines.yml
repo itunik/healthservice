@@ -17,7 +17,7 @@ steps:
 - task: Docker@2
   inputs:
     containerRegistry: 'DockerHub'
-    repository: 'basichealthservice'
+    repository: 'softimply/basichealthservice'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
-    tags: '$(Build.BuildNumber)'
+    tags: '$(Build.BuildNumber) latest'

@@ -1,0 +1,29 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildNumber)'
+
+pool:
+  vmImage: ubuntu-latest
+steps:
+- task: Docker@2
+  displayName: Build an image
+  inputs:
+    command: build
+    dockerfile: '$(Build.SourcesDirectory)/BasicHealthService/Dockerfile'
+    tags: $(tag)
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'DockerHub'
+    repository: 'basichealthservice'
+    command: 'push'
+    tags: $(tag)

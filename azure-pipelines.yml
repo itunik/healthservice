@@ -20,4 +20,4 @@ steps:
     repository: 'softimply/basichealthservice'
     command: 'buildAndPush'
     Dockerfile: '**/Dockerfile'
-    tags: '$(Build.BuildNumber) latest'
+    tags: '$(Build.BuildNumber)'

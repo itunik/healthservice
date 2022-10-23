@@ -1,8 +1,0 @@
-version: '3.4'
-
-services:
-  basichealthendpoint:
-    image: ${DOCKER_REGISTRY-}basichealthendpoint
-    build:
-      context: .
-      dockerfile: ./Dockerfile

@@ -21,13 +21,14 @@ steps:
       $content | ConvertTo-Json -Depth 5 | Set-Content -path $path
 
 - task: PowerShell@2
+  condition: $(system.debug)
   inputs:
     targetType: inline
     script: |
       $path = "./appsettings.json"
       $content = Get-Content -Path $path | ConvertFrom-Json
-      Write-Verbose "Contents of appsettings:"
-      Write-Verbose $content
+      Write-Verbose -Verbose "Contents of appsettings:"
+      Write-Verbose -Verbose $content
 - task: Docker@2
   inputs:
     containerRegistry: 'DockerHub'

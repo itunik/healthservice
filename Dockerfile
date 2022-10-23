@@ -1,13 +1,14 @@
 ﻿FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS base
 WORKDIR /app
 EXPOSE 80
+EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
 WORKDIR /src
-COPY ["BasicHealthService/BasicHealthService.csproj", "BasicHealthService/"]
-RUN dotnet restore "BasicHealthService/BasicHealthService.csproj"
+COPY ["BasicHealthService.csproj", "."]
+RUN dotnet restore "BasicHealthService.csproj"
 COPY . .
-WORKDIR "/src/BasicHealthService"
+WORKDIR "/src/"
 RUN dotnet build "BasicHealthService.csproj" -c Release -o /app/build
 
 FROM build AS publish

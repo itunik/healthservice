@@ -26,7 +26,7 @@ steps:
     targetType: inline
     script: |
       $path = "./appsettings.json"
-      $content = Get-Content -Path $path | ConvertFrom-Json
+      $content = Get-Content -Path $path
       Write-Verbose -Verbose "Contents of appsettings:"
       Write-Verbose -Verbose $content
 - task: Docker@2

@@ -21,7 +21,7 @@ steps:
       $content | ConvertTo-Json -Depth 5 | Set-Content -path $path
 
 - task: PowerShell@2
-  condition: $(system.debug)
+  condition: eq(variables['system.debug'], 'true')
   inputs:
     targetType: inline
     script: |

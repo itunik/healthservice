@@ -18,7 +18,7 @@ steps:
   displayName: Build an image
   inputs:
     command: build
-    dockerfile: '$(Build.SourcesDirectory)/BasicHealthService/Dockerfile'
+    dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
     tags: $(tag)
 
 - task: Docker@2

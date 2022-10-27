@@ -36,7 +36,7 @@ stages:
       inputs:
         targetType: 'inline'
         script: |
-          $path = "./appsettings.json"
+          $path = "src/on-premise/appsettings.json"
           $content = Get-Content -Path $path | ConvertFrom-Json
           $content.ElasticConfiguration.URI = "$(ElasticUri)"
           $content | ConvertTo-Json -Depth 5 | Set-Content -path $path
@@ -46,7 +46,7 @@ stages:
       inputs:
         targetType: inline
         script: |
-          $path = "./appsettings.json"
+          $path = "src/on-premise/appsettings.json"
           $content = Get-Content -Path $path -raw
           Write-Verbose -Verbose "Contents of appsettings:"
           Write-Verbose -Verbose $content

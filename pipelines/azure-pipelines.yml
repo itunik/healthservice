@@ -97,17 +97,16 @@ stages:
           ArtifactName: 'artifacts'
           publishLocation: 'Container'
   
+- stage: AzureDeployment
+  dependsOn: Azure
+  jobs:          
   - deployment: Deploy
     dependsOn: Provision
     environment: $(func-name)
     strategy:      
       runOnce:
         deploy:
-          steps:
-          - task: DownloadPipelineArtifact@2
-            inputs:
-              artifact: 'artifacts'
-              path: $(Pipeline.Workspace)
+          steps:          
           - task: AzureFunctionApp@1
             inputs:
               azureSubscription: '$(azureServiceConnection)'

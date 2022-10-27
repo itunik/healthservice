@@ -98,6 +98,7 @@ stages:
           publishLocation: 'Container'
   
   - deployment: Deploy
+    dependsOn: Provision
     environment: $(func-name)
     strategy:      
       runOnce:
@@ -108,4 +109,4 @@ stages:
               azureSubscription: '$(azureServiceConnection)'
               appType: functionApp
               appName: $(func-name)
-              package: '$(Build.Pipeline.Workspace)/artifacts/$(func-name).zip'
+              package: '$(Pipeline.Workspace)/artifacts/$(func-name).zip'

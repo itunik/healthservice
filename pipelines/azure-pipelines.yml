@@ -101,7 +101,6 @@ stages:
   dependsOn: Azure
   jobs:          
   - deployment: Deploy
-    dependsOn: Provision
     environment: $(func-name)
     strategy:      
       runOnce:

@@ -106,7 +106,7 @@ stages:
           steps:
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: 'WebApp'
+              artifact: 'artifacts'
               path: $(Pipeline.Workspace)
           - task: AzureFunctionApp@1
             inputs:

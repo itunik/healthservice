@@ -1,7 +1,10 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using SendGrid;
 using SendGrid.Helpers.Mail;
@@ -10,15 +13,29 @@ namespace FuncCheckServerStatus
 {
     public static class TriggerPing
     {
+        private static ILogger _logger;
+
         [FunctionName("TriggerPing")]
         public static async Task ExecutePing([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log)
         {
-            await PingServerInternal(log);
+            _logger = log;
+            await PingServerInternal();
+        }
+        
+        [FunctionName("TriggerPingHttp")]
+        public static async Task<IActionResult> ExecutePingHttp(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+            HttpRequest req, ILogger log)
+        {
+            _logger = log;
+            await PingServerInternal();
+
+            return new OkResult();
         }
 
-        private static async Task PingServerInternal(ILogger log)
+        private static async Task PingServerInternal()
         {
-            log.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
+            _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
             var uriString = Environment.GetEnvironmentVariable("PingUrl");
 
@@ -28,12 +45,14 @@ namespace FuncCheckServerStatus
 
             try
             {
+                _logger.LogInformation("Calling remote server.");
                 var response = await httpClient.GetAsync(uriString);
 
                 status = response.IsSuccessStatusCode ? "online" : "offline";
             }
             catch (Exception)
             {
+                _logger.LogInformation("Remote server did not respond.");
                 status = "offline";
             }
 
@@ -42,9 +61,11 @@ namespace FuncCheckServerStatus
 
         private static async Task RunEmailUpdate(string serverStatus)
         {
+            _logger.LogInformation("Prep for email sending.");
             DateTime reportTime = DateTime.UtcNow;
             bool localTimeZone = false;
             try {
+                _logger.LogInformation("Trying to align time zone.");
                 var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
                 TimeZoneInfo eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
                 reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, eestZone);
@@ -52,6 +73,7 @@ namespace FuncCheckServerStatus
             }
             catch (Exception)
             {
+                _logger.LogInformation("Time zone alignment failed.");
                 Console.WriteLine("Cannot parse time zone");
             }
             
@@ -69,7 +91,16 @@ namespace FuncCheckServerStatus
                 $"<p>{serverStatus} since: <strong> {reportTime} </strong></p>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlContent);
-            await client.SendEmailAsync(msg);
+            
+
+            try {
+                _logger.LogInformation("Attempt to send email");
+                await client.SendEmailAsync(msg);
+                _logger.LogInformation("Email send.");
+            }
+            catch (Exception e) {
+                _logger.Log(LogLevel.Error, e, "Error sending email");
+            }
         }
     }
 }

@@ -10,7 +10,10 @@ param senderEmail string
 param recieverEmail string
 @secure()
 param partitionKey string
-
+@secure()
+param insightsConnectionString string
+@secure()
+param insightsInstrumentationKey string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: 'sapingfunction'
@@ -74,6 +77,14 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'TimeZoneId'
           value: 'Etc/GMT-2'
+        }
+        {
+          name: 'APPINSIGHTS_CONNECTIONSTRING'
+          value: insightsConnectionString
+        }
+        {
+          name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+          value: insightsInstrumentationKey
         }
       ]
     }

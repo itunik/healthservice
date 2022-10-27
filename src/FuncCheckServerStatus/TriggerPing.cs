@@ -11,7 +11,7 @@ namespace FuncCheckServerStatus
     public static class TriggerPing
     {
         [FunctionName("TriggerPing")]
-        public static async Task ExecutePing([TimerTrigger("* * */1 * * *")]TimerInfo myTimer, ILogger log)
+        public static async Task ExecutePing([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log)
         {
             await PingServerInternal(log);
         }

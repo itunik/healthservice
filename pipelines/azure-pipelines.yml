@@ -22,7 +22,7 @@ variables:
   value: './templates/func-kv.bicep'
 
 - name: azureServiceConnection
-  value: 'ARM'
+  value: 'ARM2'
 
 - name: func-name
   value: FuncCheckServerStatus

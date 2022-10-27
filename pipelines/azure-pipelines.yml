@@ -102,7 +102,7 @@ stages:
     steps:
     - task: AzureFunctionApp@1
       inputs:
-        azureSubscription: '$(azureSubscription)'
+        azureSubscription: '$(azureServiceConnection)'
         appType: functionApp
         appName: $(func-name)
         package: '$(Build.ArtifactStagingDirectory)/$(func-name).zip'

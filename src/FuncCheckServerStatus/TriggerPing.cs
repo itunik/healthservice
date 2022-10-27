@@ -43,7 +43,7 @@ namespace FuncCheckServerStatus
         private static async Task RunEmailUpdate(string serverStatus)
         {
             DateTime reportTime = DateTime.UtcNow;
-            bool localTimeZone;
+            bool localTimeZone = false;
             try {
                 var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
                 TimeZoneInfo eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);

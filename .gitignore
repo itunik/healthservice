@@ -357,3 +357,5 @@ MigrationBackup/
 
 # Other
 global.json
+*/**/local.settings.json
+*/**/.vscode

@@ -42,8 +42,19 @@ namespace FuncCheckServerStatus
 
         private static async Task RunEmailUpdate(string serverStatus)
         {
-            TimeZoneInfo eestZone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Kyiv");
-            DateTime cstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, eestZone);
+            DateTime reportTime = DateTime.UtcNow;
+            bool localTimeZone;
+            try {
+                var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
+                TimeZoneInfo eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, eestZone);
+                localTimeZone = true;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Cannot parse time zone");
+            }
+            
             
             var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);
@@ -55,7 +66,8 @@ namespace FuncCheckServerStatus
             var htmlContent = 
                 $@"<p>Home server status: " +
                 $"<span style=\"color: {color};\"><strong>{serverStatus}</strong></span></p>" + 
-                $"<p>{serverStatus} since: <strong> {cstTime} </strong></p>";
+                $"<p>{serverStatus} since: <strong> {reportTime} </strong></p>" +
+                $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
             var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlContent);
             await client.SendEmailAsync(msg);
         }

@@ -71,6 +71,10 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
           name: 'PartitionKey'
           value: partitionKey
         }
+        {
+          name: 'TimeZoneId'
+          value: 'Etc/GMT-2'
+        }
       ]
     }
   }

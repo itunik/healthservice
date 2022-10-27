@@ -97,12 +97,15 @@ stages:
           ArtifactName: 'artifacts'
           publishLocation: 'Container'
   
-  - job: Deploy
-    dependsOn: Build
-    steps:
-    - task: AzureFunctionApp@1
-      inputs:
-        azureSubscription: '$(azureServiceConnection)'
-        appType: functionApp
-        appName: $(func-name)
-        package: '$(Build.ArtifactStagingDirectory)/$(func-name).zip'
+  - deployment: Deploy
+    environment: $(func-name)
+    strategy:      
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureFunctionApp@1
+            inputs:
+              azureSubscription: '$(azureServiceConnection)'
+              appType: functionApp
+              appName: $(func-name)
+              package: '$(Build.Pipeline.Workspace)/artifacts/$(func-name).zip'

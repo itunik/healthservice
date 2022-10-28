@@ -65,6 +65,12 @@ namespace FuncCheckServerStatus
             DateTime reportTime = DateTime.UtcNow;
             bool localTimeZone = false;
             try {
+                
+                foreach(TimeZoneInfo tz in TimeZoneInfo.GetSystemTimeZones())
+                {
+                    _logger.LogInformation($"Available time zones: {tz.Id}::{tz.DisplayName}");   
+                }
+                
                 _logger.LogInformation("Trying to align time zone.");
                 var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
                 TimeZoneInfo eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);

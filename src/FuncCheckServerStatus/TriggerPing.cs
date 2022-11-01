@@ -82,14 +82,14 @@ namespace FuncCheckServerStatus
             var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress(Environment.GetEnvironmentVariable("FromEmail"));
-            var subject = $"Server status: {serverStatus}";
+            var subject = $"Server status: {serverStatus} @ {reportTime.ToShortTimeString()}";
             var to = new EmailAddress(Environment.GetEnvironmentVariable("ToEmail"));
 
             var color = serverStatus == "online"? "#3EB885": "#FC574D";
             var htmlContent =
                 $@"<p>Home server status: " +
                 $"<span style=\"color: {color};\"><strong>{serverStatus}</strong></span></p>" +
-                $"<p>{serverStatus} since: <strong> {reportTime} </strong></p>" +
+                $"<p>{serverStatus.ToUpper()} since: <strong> {reportTime} </strong></p>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
 
             var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones"));

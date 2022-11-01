@@ -76,7 +76,7 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
         }
         {
           name: 'TimeZoneId'
-          value: 'Etc/GMT-2'
+          value: 'FLE Standard Time'
         }
         {
           name: 'APPINSIGHTS_CONNECTIONSTRING'

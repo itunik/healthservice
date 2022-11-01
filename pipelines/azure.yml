@@ -3,14 +3,13 @@ trigger:
     include:
     - develop
   paths:
-  include:
-    - src/FuncCheckServerStatus
-    - pipelines/azure.yml
-    - templates
-  exclude:
-    - src/on-premise
-    - src/onpremise-docker.yml
-    
+    include:
+      - src/FuncCheckServerStatus
+      - pipelines/azure.yml
+      - templates
+    exclude:
+      - src/on-premise
+      - src/onpremise-docker.yml
 
 resources:
 - repo: self

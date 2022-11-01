@@ -21,7 +21,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   kind:'StorageV2'
   sku:{
     name:'Standard_LRS'
-  }  
+  }    
+}
+
+resource table 'Microsoft.Storage/storageAccounts/tableServices/tables@2022-05-01' = {
+  name: '${storageAccount.name}/default/StatusData'
 }
 
 resource servicePlan 'Microsoft.Web/serverfarms@2020-12-01' = {
@@ -89,6 +93,10 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'ShouldReadTimezones'
           value: 'false'
+        }
+        {
+          name: 'TableName'
+          value: 'StatusData'
         }
       ]
     }

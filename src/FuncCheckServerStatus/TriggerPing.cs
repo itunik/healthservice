@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Azure.Data.Tables;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -16,7 +18,7 @@ namespace FuncCheckServerStatus
         private static ILogger _logger;
 
         [FunctionName("TriggerPing")]
-        public static async Task ExecutePing([TimerTrigger("0 0 * * * *")]TimerInfo myTimer, ILogger log)
+        public static async Task ExecutePing([TimerTrigger("0 */20 * * * *")]TimerInfo myTimer, ILogger log)
         {
             _logger = log;
             await PingServerInternal();
@@ -56,7 +58,33 @@ namespace FuncCheckServerStatus
                 status = "offline";
             }
 
-            await RunEmailUpdate(status);
+            await UpdateServerStatus(status);
+
+            // await RunEmailUpdate(status);
+        }
+
+        private static async Task UpdateServerStatus(string status)
+        {
+            // New instance of the TableClient class
+            TableServiceClient tableServiceClient = new TableServiceClient(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
+
+            var tableClient = tableServiceClient.GetTableClient(tableName: Environment.GetEnvironmentVariable("TableName"));
+
+            var serverStatusItem = new ServerStatusItem()
+            {
+                Status = status,
+                RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString()
+            };
+
+            
+            var latest = await tableClient.QueryAsync<ServerStatusItem>(maxPerPage:1).FirstOrDefaultAsync();
+
+            if (latest == null || latest.Status != status)
+            {
+                await RunEmailUpdate(status);
+            }
+            
+            await tableClient.AddEntityAsync(serverStatusItem);
         }
 
         private static async Task RunEmailUpdate(string serverStatus)
@@ -68,9 +96,12 @@ namespace FuncCheckServerStatus
             try {
                 _logger.LogInformation("Trying to align time zone.");
                 var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
-                var eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, eestZone);
-                localTimeZone = true;
+                if (timeZoneId != null)
+                {
+                    var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                    reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
+                    localTimeZone = true;
+                }
             }
             catch (Exception)
             {
@@ -92,7 +123,7 @@ namespace FuncCheckServerStatus
                 $"<p>{serverStatus.ToUpper()} since: <strong> {reportTime} </strong></p>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
 
-            var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones"));
+            var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones") ?? "false");
             
             if (fetchTimeZones)
             {

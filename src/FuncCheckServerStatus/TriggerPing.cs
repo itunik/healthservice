@@ -62,18 +62,13 @@ namespace FuncCheckServerStatus
         private static async Task RunEmailUpdate(string serverStatus)
         {
             _logger.LogInformation("Prep for email sending.");
-            DateTime reportTime = DateTime.UtcNow;
-            bool localTimeZone = false;
+            var reportTime = DateTime.UtcNow;
+            var localTimeZone = false;
+            
             try {
-                
-                foreach(TimeZoneInfo tz in TimeZoneInfo.GetSystemTimeZones())
-                {
-                    _logger.LogInformation($"Available time zones: {tz.Id}::{tz.DisplayName}");   
-                }
-                
                 _logger.LogInformation("Trying to align time zone.");
                 var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
-                TimeZoneInfo eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                var eestZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
                 reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, eestZone);
                 localTimeZone = true;
             }
@@ -91,13 +86,27 @@ namespace FuncCheckServerStatus
             var to = new EmailAddress(Environment.GetEnvironmentVariable("ToEmail"));
 
             var color = serverStatus == "online"? "#3EB885": "#FC574D";
-            var htmlContent = 
+            var htmlContent =
                 $@"<p>Home server status: " +
-                $"<span style=\"color: {color};\"><strong>{serverStatus}</strong></span></p>" + 
+                $"<span style=\"color: {color};\"><strong>{serverStatus}</strong></span></p>" +
                 $"<p>{serverStatus} since: <strong> {reportTime} </strong></p>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlContent);
+
+            var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones"));
             
+            if (fetchTimeZones)
+            {
+                var timeZonesHtml = $"<tr><td>Id</td><td>Display Name</td></tr>";
+            
+                foreach(var tz in TimeZoneInfo.GetSystemTimeZones())
+                {
+                    timeZonesHtml += $"\n\r<tr><td>{tz.Id}</td><td>{tz.DisplayName}</td></tr>";
+                }
+                htmlContent += $"<p><strong>Supported Time Zones</strong></p>";
+                htmlContent += $"<table>{timeZonesHtml}</table>";
+            }
+            
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, "", htmlContent);
 
             try {
                 _logger.LogInformation("Attempt to send email");

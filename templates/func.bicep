@@ -44,7 +44,7 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
       appSettings:[
         {
           name: 'AzureWebJobsStorage'
-          value:'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
+          value:'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'          
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'
@@ -85,6 +85,10 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: insightsInstrumentationKey
+        }
+        {
+          name: 'ShouldReadTimezones'
+          value: 'false'
         }
       ]
     }

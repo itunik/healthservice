@@ -1,0 +1,60 @@
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - src/on-premise
+    - src/onpremise-docker.yml
+    exclude:
+    - src/FuncCheckServerStatus
+    - pipelines/azure.yml
+    - templates
+
+
+resources:
+- repo: self
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+- name: system.debug
+  value: false
+
+- name: azureServiceConnection
+  value: 'ARM2'
+
+stages:
+- stage: OnPremise
+  jobs:
+  - job: OnPremise
+    steps:
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          $path = "src/on-premise/appsettings.json"
+          $content = Get-Content -Path $path | ConvertFrom-Json
+          $content.ElasticConfiguration.URI = "$(ElasticUri)"
+          $content | ConvertTo-Json -Depth 5 | Set-Content -path $path
+
+    - task: PowerShell@2
+      condition: eq(variables['system.debug'], 'true')
+      inputs:
+        targetType: inline
+        script: |
+          $path = "src/on-premise/appsettings.json"
+          $content = Get-Content -Path $path -raw
+          Write-Verbose -Verbose "Contents of appsettings:"
+          Write-Verbose -Verbose $content
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'DockerHub'
+        repository: 'softimply/basichealthservice'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: | 
+          $(Build.BuildNumber)
+          latest

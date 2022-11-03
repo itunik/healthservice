@@ -25,7 +25,7 @@ variables:
   value: 'on-premise'
 
 - name: templateFile
-  value: './templates/func-kv.bicep'
+  value: './templates/bicep/func-kv.bicep'
 
 - name: azureServiceConnection
   value: 'ARM2'

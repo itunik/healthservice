@@ -13,6 +13,7 @@ module func 'func.bicep' = {
     serverPingUrl: devOpsKeyVault.getSecret('PingUrl')
     insightsConnectionString:applicationInsights.properties.ConnectionString
     insightsInstrumentationKey:applicationInsights.properties.InstrumentationKey
+    location: location
   }
 }
 

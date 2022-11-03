@@ -119,7 +119,7 @@ namespace FuncCheckServerStatus
             var color = serverStatus == "online"? "#3EB885": "#FC574D";
             var htmlContent =
                 $@"<p>Home server status: " +
-                $"<span style=\"color: {color};\"><strong>{serverStatus}</strong></span></p>" +
+                $"<span style=\"color: {color};\"><strong>{serverStatus.ToUpper()}</strong></span></p>" +
                 $"<p>{serverStatus.ToUpper()} since: <strong> {reportTime} </strong></p>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
 

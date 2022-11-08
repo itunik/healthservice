@@ -81,18 +81,20 @@ namespace FuncCheckServerStatus
 
             if (latest == null || latest.Status != status)
             {
-                await RunEmailUpdate(status);
+                await RunEmailUpdate(status, latest.Timestamp);
             }
             
             await tableClient.AddEntityAsync(serverStatusItem);
         }
 
-        private static async Task RunEmailUpdate(string serverStatus)
+        private static async Task RunEmailUpdate(string serverStatus, DateTimeOffset? lastEventTime)
         {
             _logger.LogInformation("Prep for email sending.");
             var reportTime = DateTime.UtcNow;
             var localTimeZone = false;
-            
+
+            var timeInStatus = reportTime - lastEventTime.Value.UtcDateTime;
+
             try {
                 _logger.LogInformation("Trying to align time zone.");
                 var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
@@ -109,7 +111,6 @@ namespace FuncCheckServerStatus
                 Console.WriteLine("Cannot parse time zone");
             }
             
-            
             var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress(Environment.GetEnvironmentVariable("FromEmail"));
@@ -120,7 +121,8 @@ namespace FuncCheckServerStatus
             var htmlContent =
                 $@"<p>Home server status: " +
                 $"<span style=\"color: {color};\"><strong>{serverStatus.ToUpper()}</strong></span></p>" +
-                $"<p>{serverStatus.ToUpper()} since: <strong> {reportTime} </strong></p>" +
+                $"<p>{serverStatus.ToUpper()} since: <strong> {reportTime} </strong>" +
+                $"<p>{serverStatus.ToUpper()}:<strong> {timeInStatus.Days} days {timeInStatus.Hours} hours {timeInStatus.Minutes} minutes</strong></p>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
 
             var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones") ?? "false");

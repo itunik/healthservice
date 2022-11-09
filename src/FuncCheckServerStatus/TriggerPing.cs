@@ -69,23 +69,22 @@ namespace FuncCheckServerStatus
             TableServiceClient tableServiceClient = new TableServiceClient(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
 
             var tableClient = tableServiceClient.GetTableClient(tableName: Environment.GetEnvironmentVariable("TableName"));
-
-            var serverStatusItem = new ServerStatusItem()
-            {
-                Status = status,
-                RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString(),
-                StatusUpdate = DateTime.UtcNow
-            };
-
             
             var latest = await tableClient.QueryAsync<ServerStatusItem>(maxPerPage:1).FirstOrDefaultAsync();
 
-            if (latest == null || latest.Status != status)
+            if ((latest == null) || (latest.Status != status))
             {
+                var serverStatusItem = new ServerStatusItem()
+                {
+                    Status = status,
+                    RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString(),
+                    StatusUpdate = DateTime.UtcNow
+                };
+                    
+                await tableClient.AddEntityAsync(serverStatusItem);
+                    
                 await RunEmailUpdate(latest?.Status, status, latest?.StatusUpdate);
             }
-            
-            await tableClient.AddEntityAsync(serverStatusItem);
         }
 
         private static async Task RunEmailUpdate(string previousStatus, string currentServerStatus, DateTime? lastEventTime)

@@ -73,7 +73,8 @@ namespace FuncCheckServerStatus
             var serverStatusItem = new ServerStatusItem()
             {
                 Status = status,
-                RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString()
+                RowKey = (DateTime.MaxValue.Ticks - DateTime.UtcNow.Ticks).ToString(),
+                StatusUpdate = DateTime.UtcNow
             };
 
             
@@ -81,19 +82,17 @@ namespace FuncCheckServerStatus
 
             if (latest == null || latest.Status != status)
             {
-                await RunEmailUpdate(status, latest.Timestamp);
+                await RunEmailUpdate(latest?.Status, status, latest?.StatusUpdate);
             }
             
             await tableClient.AddEntityAsync(serverStatusItem);
         }
 
-        private static async Task RunEmailUpdate(string serverStatus, DateTimeOffset? lastEventTime)
+        private static async Task RunEmailUpdate(string previousStatus, string currentServerStatus, DateTime? lastEventTime)
         {
             _logger.LogInformation("Prep for email sending.");
             var reportTime = DateTime.UtcNow;
             var localTimeZone = false;
-
-            var timeInStatus = reportTime - lastEventTime.Value.UtcDateTime;
 
             try {
                 _logger.LogInformation("Trying to align time zone.");
@@ -114,17 +113,24 @@ namespace FuncCheckServerStatus
             var apiKey = Environment.GetEnvironmentVariable("SendGridApiKey");
             var client = new SendGridClient(apiKey);
             var from = new EmailAddress(Environment.GetEnvironmentVariable("FromEmail"));
-            var subject = $"Server status: {serverStatus} @ {reportTime.ToShortTimeString()}";
+            var subject = $"Server status: {currentServerStatus} @ {reportTime.ToShortTimeString()}";
             var to = new EmailAddress(Environment.GetEnvironmentVariable("ToEmail"));
 
-            var color = serverStatus == "online"? "#3EB885": "#FC574D";
+            var color = currentServerStatus == "online"? "#3EB885": "#FC574D";
             var htmlContent =
                 $@"<p>Home server status: " +
-                $"<span style=\"color: {color};\"><strong>{serverStatus.ToUpper()}</strong></span></p>" +
-                $"<p>{serverStatus.ToUpper()} since: <strong> {reportTime} </strong>" +
-                $"<p>{serverStatus.ToUpper()}:<strong> {timeInStatus.Days} days {timeInStatus.Hours} hours {timeInStatus.Minutes} minutes</strong></p>" +
+                $"<span style=\"color: {color};\"><strong>{currentServerStatus.ToUpper()}</strong></span></p>" +
+                $"<p>{currentServerStatus.ToUpper()} since: <strong> {reportTime} </strong>" +
                 $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
 
+
+            if (lastEventTime != null && !string.IsNullOrWhiteSpace(previousStatus))
+            {
+                var timeInStatus = reportTime - lastEventTime;
+                htmlContent +=
+                    $"<p>{previousStatus.ToUpper()}:<strong> {timeInStatus.Value.Days} days {timeInStatus.Value.Hours} hours {timeInStatus.Value.Minutes} minutes</strong></p>";
+            }
+            
             var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones") ?? "false");
             
             if (fetchTimeZones)

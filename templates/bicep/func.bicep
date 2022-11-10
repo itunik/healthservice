@@ -14,6 +14,7 @@ param partitionKey string
 param insightsConnectionString string
 @secure()
 param insightsInstrumentationKey string
+param funcName string
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: 'sapingfunction'
@@ -36,8 +37,6 @@ resource servicePlan 'Microsoft.Web/serverfarms@2020-12-01' = {
     tier:'Dynamic'
   }
 }
-
-var funcName = 'func-softimply-serverping'
 
 resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
   name:funcName

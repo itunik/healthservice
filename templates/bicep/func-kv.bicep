@@ -1,4 +1,6 @@
 param location string = resourceGroup().location
+param funcName_g string
+
 resource devOpsKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: 'kv-softimply-onprem'
 }
@@ -14,6 +16,7 @@ module func 'func.bicep' = {
     insightsConnectionString:applicationInsights.properties.ConnectionString
     insightsInstrumentationKey:applicationInsights.properties.InstrumentationKey
     location: location
+    funcName: funcName_g
   }
 }
 

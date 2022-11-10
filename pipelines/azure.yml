@@ -35,7 +35,7 @@ stages:
           scriptLocation: inlineScript
           inlineScript: |          
             az group create --name $(resourceGroupName) --location $(rgLocation)
-            az deployment group create --resource-group $(resourceGroupName) --template-file $(templateFile) --parameters func-name=$(func-name)
+            az deployment group create --resource-group $(resourceGroupName) --template-file $(templateFile) --parameters funcName_g=$(func-name)
     
   - job: Build
     dependsOn: Provision

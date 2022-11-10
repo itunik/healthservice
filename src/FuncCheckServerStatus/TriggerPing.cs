@@ -119,16 +119,17 @@ namespace FuncCheckServerStatus
             var htmlContent =
                 $@"<p>Home server status: " +
                 $"<span style=\"color: {color};\"><strong>{currentServerStatus.ToUpper()}</strong></span></p>" +
-                $"<p>{currentServerStatus.ToUpper()} since: <strong> {reportTime} </strong>" +
-                $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
+                $"<p>{currentServerStatus.ToUpper()} since: <strong> {reportTime} </strong>";
 
 
             if (lastEventTime != null && !string.IsNullOrWhiteSpace(previousStatus))
             {
                 var timeInStatus = reportTime - lastEventTime;
                 htmlContent +=
-                    $"<p>{previousStatus.ToUpper()}:<strong> {timeInStatus.Value.Days} days {timeInStatus.Value.Hours} hours {timeInStatus.Value.Minutes} minutes</strong></p>";
+                    $"<p><strong>Time spent {previousStatus.ToUpper()}: {timeInStatus.Value.Days} days {timeInStatus.Value.Hours} hours {timeInStatus.Value.Minutes} minutes</strong></p>";
             }
+            
+            htmlContent += $"<p> Local time zone: <strong> {localTimeZone}</strong></p>";
             
             var fetchTimeZones = bool.Parse(Environment.GetEnvironmentVariable("ShouldReadTimezones") ?? "false");
             

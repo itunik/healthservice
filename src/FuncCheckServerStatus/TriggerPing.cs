@@ -18,7 +18,7 @@ namespace FuncCheckServerStatus
         private static ILogger _logger;
 
         [FunctionName("TriggerPing")]
-        public static async Task ExecutePing([TimerTrigger("0 */20 * * * *")]TimerInfo myTimer, ILogger log)
+        public static async Task ExecutePing([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
             _logger = log;
             await PingServerInternal();
@@ -40,7 +40,6 @@ namespace FuncCheckServerStatus
             _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
             var uriString = Environment.GetEnvironmentVariable("PingUrl");
-
             using var httpClient = new HttpClient();
             httpClient.Timeout = TimeSpan.FromSeconds(20);
             string status;
@@ -49,7 +48,6 @@ namespace FuncCheckServerStatus
             {
                 _logger.LogInformation("Calling remote server.");
                 var response = await httpClient.GetAsync(uriString);
-
                 status = response.IsSuccessStatusCode ? "online" : "offline";
             }
             catch (Exception)
@@ -59,8 +57,6 @@ namespace FuncCheckServerStatus
             }
 
             await UpdateServerStatus(status);
-
-            // await RunEmailUpdate(status);
         }
 
         private static async Task UpdateServerStatus(string status)

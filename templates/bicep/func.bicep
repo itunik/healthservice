@@ -37,10 +37,15 @@ resource servicePlan 'Microsoft.Web/serverfarms@2020-12-01' = {
   }
 }
 
+var funcName = 'func-softimply-serverping'
+
 resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
-  name:'func-softimply-serverping'
+  name:funcName
   location: location
   kind:'functionapp'  
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties:{
     serverFarmId: servicePlan.id
     clientAffinityEnabled: true
@@ -48,7 +53,15 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
       appSettings:[
         {
           name: 'AzureWebJobsStorage'
-          value:'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'          
+          value:'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value:'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: toLower(funcName)
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'

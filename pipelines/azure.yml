@@ -18,20 +18,10 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-- name: system.debug
-  value: false
-
-- name: resourceGroupName
-  value: 'on-premise'
-
-- name: templateFile
-  value: './templates/bicep/func-kv.bicep'
-
+- group: deployment
 - name: azureServiceConnection
   value: 'ARM2'
 
-- name: func-name
-  value: 'func-softimply-serverping'
 
 stages:
 - stage: Azure
@@ -44,6 +34,7 @@ stages:
           scriptType: bash
           scriptLocation: inlineScript
           inlineScript: |          
+            az group create --name $(resourceGroupName) --location $(rgLocation)
             az deployment group create --resource-group $(resourceGroupName) --template-file $(templateFile)
     
   - job: Build
@@ -71,6 +62,7 @@ stages:
           publishLocation: 'Container'
   
 - stage: AzureDeployment
+  displayName: Azure Deployment
   dependsOn: Azure
   jobs:          
   - deployment: Deploy

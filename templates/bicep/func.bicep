@@ -110,6 +110,10 @@ resource funcServerPing 'Microsoft.Web/sites@2022-03-01' = {
           name: 'TableName'
           value: 'StatusData'
         }
+        {
+          name: 'WEBSITE_TIME_ZONE'
+          value: 'FLE Standard Time'
+        }
       ]
     }
   }

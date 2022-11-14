@@ -21,6 +21,20 @@ namespace FuncCheckServerStatus
         public static async Task ExecutePing([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
             _logger = log;
+            await PingServerInternal(true);
+        }
+
+        [FunctionName("FirstPingOfTheDay")]
+        public static async Task ExecuteFirstPingOfTheDay([TimerTrigger("0 1 00 * * *")] TimerInfo myTimer, ILogger log)
+        {
+            _logger = log;
+            await PingServerInternal();
+        }
+        
+        [FunctionName("LastPingOfTheDay")]
+        public static async Task ExecuteFirstPing([TimerTrigger("0 58 23 * * *")] TimerInfo myTimer, ILogger log)
+        {
+            _logger = log;
             await PingServerInternal();
         }
         
@@ -30,12 +44,12 @@ namespace FuncCheckServerStatus
             HttpRequest req, ILogger log)
         {
             _logger = log;
-            await PingServerInternal();
+            await PingServerInternal(true);
 
             return new OkResult();
         }
 
-        private static async Task PingServerInternal()
+        private static async Task PingServerInternal(bool shouldGenerateReport = false)
         {
             _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -56,7 +70,8 @@ namespace FuncCheckServerStatus
                 status = "offline";
             }
 
-            await UpdateServerStatus(status);
+            if (!shouldGenerateReport)
+                await UpdateServerStatus(status);
         }
 
         private static async Task UpdateServerStatus(string status)

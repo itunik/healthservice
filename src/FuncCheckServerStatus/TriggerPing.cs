@@ -28,14 +28,14 @@ namespace FuncCheckServerStatus
         public static async Task ExecuteFirstPingOfTheDay([TimerTrigger("0 1 00 * * *")] TimerInfo myTimer, ILogger log)
         {
             _logger = log;
-            await PingServerInternal();
+            await PingServerInternal(false);
         }
         
         [FunctionName("LastPingOfTheDay")]
         public static async Task ExecuteFirstPing([TimerTrigger("0 58 23 * * *")] TimerInfo myTimer, ILogger log)
         {
             _logger = log;
-            await PingServerInternal();
+            await PingServerInternal(false);
         }
         
         [FunctionName("TriggerPingHttp")]
@@ -49,7 +49,7 @@ namespace FuncCheckServerStatus
             return new OkResult();
         }
 
-        private static async Task PingServerInternal(bool shouldGenerateReport = false)
+        private static async Task PingServerInternal(bool shouldGenerateReport = true)
         {
             _logger.LogInformation($"C# Timer trigger function executed at: {DateTime.Now}");
 
@@ -70,11 +70,10 @@ namespace FuncCheckServerStatus
                 status = "offline";
             }
 
-            if (!shouldGenerateReport)
-                await UpdateServerStatus(status);
+            await UpdateServerStatus(status, shouldGenerateReport);
         }
 
-        private static async Task UpdateServerStatus(string status)
+        private static async Task UpdateServerStatus(string status, bool shouldGenerateReport = true)
         {
             // New instance of the TableClient class
             TableServiceClient tableServiceClient = new TableServiceClient(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
@@ -93,9 +92,10 @@ namespace FuncCheckServerStatus
                 };
                     
                 await tableClient.AddEntityAsync(serverStatusItem);
-                    
-                await RunEmailUpdate(latest?.Status, status, latest?.StatusUpdate);
             }
+            
+            if(shouldGenerateReport)
+                await RunEmailUpdate(latest?.Status, status, latest?.StatusUpdate);
         }
 
         private static async Task RunEmailUpdate(string previousStatus, string currentServerStatus, DateTime? lastEventTime)

@@ -21,7 +21,7 @@ namespace FuncCheckServerStatus
         public static async Task ExecutePing([TimerTrigger("0 */5 * * * *")]TimerInfo myTimer, ILogger log)
         {
             _logger = log;
-            await PingServerInternal(true);
+            await PingServerInternal();
         }
 
         [FunctionName("FirstPingOfTheDay")]
@@ -92,10 +92,10 @@ namespace FuncCheckServerStatus
                 };
                     
                 await tableClient.AddEntityAsync(serverStatusItem);
+                
+                if(shouldGenerateReport)
+                    await RunEmailUpdate(latest?.Status, status, latest?.StatusUpdate);
             }
-            
-            if(shouldGenerateReport)
-                await RunEmailUpdate(latest?.Status, status, latest?.StatusUpdate);
         }
 
         private static async Task RunEmailUpdate(string previousStatus, string currentServerStatus, DateTime? lastEventTime)

@@ -34,7 +34,7 @@ namespace FuncCheckServerStatus
             }
         }
 
-		[FunctionName("FirstPingOfTheDay")]
+		//[FunctionName("FirstPingOfTheDay")]
 		public static async Task ExecuteFirstPingOfTheDay([TimerTrigger("0 1 00 * * *")] TimerInfo myTimer, ILogger log)
 		{
 			_logger = log;
@@ -42,7 +42,7 @@ namespace FuncCheckServerStatus
 			await UpdateServerStatus(status);
 		}
 		
-		[FunctionName("LastPingOfTheDay")]
+		//[FunctionName("LastPingOfTheDay")]
 		public static async Task ExecuteFirstPing([TimerTrigger("0 58 23 * * *")] TimerInfo myTimer, ILogger log)
 		{
 			_logger = log;
@@ -177,56 +177,58 @@ namespace FuncCheckServerStatus
 			}
 		}
 
-   //     [FunctionName("TriggerPingHttp")]
-   //     public static async Task<IActionResult> SendEmailDailyReport(
-   //                     [HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
-			//			HttpRequest req, ILogger log)
+		[FunctionName("TriggerPingHttp")]
+		public static async Task<IActionResult> SendEmailDailyReport(
+						[HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]
+					HttpRequest req, ILogger log)
 
-   //     {
-   //         _logger = log;
+		{
+			_logger = log;
 
-   //         TableServiceClient tableServiceClient = new TableServiceClient(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
+            //TableServiceClient tableServiceClient = new TableServiceClient(Environment.GetEnvironmentVariable("AzureWebJobsStorage"));
 
-   //         var tableClient = tableServiceClient.GetTableClient(tableName: Environment.GetEnvironmentVariable("TableName"));
+            //var tableClient = tableServiceClient.GetTableClient(tableName: Environment.GetEnvironmentVariable("TableName"));
 
-   //         var reportTime = DateTime.UtcNow;
-   //         var localTimeZone = false;
+            //var reportTime = DateTime.UtcNow;
+            //var localTimeZone = false;
 
-   //         try
-   //         {
-   //             _logger.LogInformation("Trying to align time zone.");
-   //             var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
-   //             if (timeZoneId != null)
-   //             {
-   //                 var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-   //                 reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
-   //                 localTimeZone = true;
-   //             }
-   //         }
-   //         catch (Exception)
-   //         {
-   //             _logger.LogInformation("Time zone alignment failed.");
-   //             Console.WriteLine("Cannot parse time zone");
-   //         }
+            //try
+            //{
+            //	_logger.LogInformation("Trying to align time zone.");
+            //	var timeZoneId = Environment.GetEnvironmentVariable("TimeZoneId");
+            //	if (timeZoneId != null)
+            //	{
+            //		var timeZone = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            //		reportTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
+            //		localTimeZone = true;
+            //	}
+            //}
+            //catch (Exception)
+            //{
+            //	_logger.LogInformation("Time zone alignment failed.");
+            //	Console.WriteLine("Cannot parse time zone");
+            //}
 
-   //         var queryResult = await tableClient.QueryAsync<ServerStatusItem>().OrderBy(ssi=>ssi.StatusUpdate).ToListAsync();
+            //var queryResult = await tableClient.QueryAsync<ServerStatusItem>().OrderBy(ssi => ssi.StatusUpdate).ToListAsync();
 
-			//var l = new List<ServerStatusItem>();
+            //var l = new List<ServerStatusItem>();
 
-			//foreach (var item in queryResult)
-			//{
-			//	if (item.StatusUpdate.Date == reportTime.Date)
-			//		l.Add(item);
-			//}
+            //foreach (var item in queryResult)
+            //{
+            //	if (item.StatusUpdate.Date == reportTime.Date)
+            //		l.Add(item);
+            //}
 
+            var status = await PingServerInternal(false);
+            await UpdateServerStatus(status);
 
-			//Console.WriteLine(l);
-			//return new OkObjectResult(l);
-   //         //query all status within the day
-   //         //calculate amount online
-   //         //calculate amount offline
-   //         //createhtml
-   //         //send html
-   //     }
-    }
+            
+			return new OkObjectResult(status);
+			//query all status within the day
+			//calculate amount online
+			//calculate amount offline
+			//createhtml
+			//send html
+		}
+	}
 }
